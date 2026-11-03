@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>茉 · 写作台</title>
+<script>
+  /* 渲染前先把缩放套上，免得页面闪一下再变大变小 */
+  try {
+    var __z = Number(localStorage.getItem('mo:uiZoom') || 100);
+    if (__z && __z !== 100) document.documentElement.style.zoom = __z / 100;
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ───────────── 登录 ───────────── -->
+<div id="login" class="login">
+  <div class="loginInner">
+    <div class="brand">茉</div>
+    <div class="brandSub">写 作 台</div>
+    <input id="pwInput" class="loginInput" type="password" placeholder="密码" autocomplete="current-password" inputmode="text">
+    <button id="loginBtn" class="loginBtn">进 入</button>
+    <div id="loginHint" class="loginHint">手机请连同一个 WiFi，用电脑的局域网地址打开本页</div>
+    <div id="lanHint" class="lanHint" hidden></div>
+  </div>
+</div>
+
+<!-- ───────────── 主界面 ───────────── -->
+<div id="app" class="app" hidden>
+
+  <!-- 左侧视图栏 -->
+  <nav id="rail" class="rail">
+    <div class="railBrand" id="btnShelf" title="书架 · 换一本写" role="button" tabindex="0">茉</div>
+    <button class="railBtn" data-view="text" title="正文">
+      <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+      <span>正文</span>
+    </button>
+    <button class="railBtn" data-view="tree" title="大纲">
+      <svg viewBox="0 0 24 24"><path d="M4 6h6M4 12h10M4 18h14"/></svg>
+      <span>大纲</span>
+    </button>
+    <button class="railBtn" data-view="characters" title="角色">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>
+      <span>角色</span>
+    </button>
+    <button class="railBtn" data-view="plots" title="情节">
+      <svg viewBox="0 0 24 24"><path d="M4 17c3-8 5 3 8-4s5 3 8-6"/><circle cx="4" cy="17" r="1.4"/><circle cx="20" cy="7" r="1.4"/></svg>
+      <span>情节</span>
+    </button>
+    <button class="railBtn" data-view="world" title="世界">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M3.6 12h16.8M12 3.6c2.6 2.6 2.6 14.2 0 16.8M12 3.6c-2.6 2.6-2.6 14.2 0 16.8"/></svg>
+      <span>世界</span>
+    </button>
+    <button class="railBtn" data-view="mind" title="思维">
+      <svg viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.1"/><circle cx="18" cy="4.2" r="2.1"/><circle cx="18" cy="12" r="2.1"/><circle cx="18" cy="19.8" r="2.1"/><path d="M7.6 6h4.6a2 2 0 0 1 2 2v2M7.6 6h4.6a2 2 0 0 1 2 2v10a2 2 0 0 0 2 2M14.2 12h1.7"/></svg>
+      <span>思维</span>
+    </button>
+    <button class="railBtn" data-view="items" title="物品">
+      <svg viewBox="0 0 24 24"><path d="M12 3.4 20 8v8l-8 4.6L4 16V8z"/><path d="M4 8l8 4.6L20 8M12 12.6V20.6"/></svg>
+      <span>物品</span>
+    </button>
+    <button class="railBtn" data-view="stats" title="统计">
+      <svg viewBox="0 0 24 24"><path d="M5 19V9M10 19V5M15 19v-7M20 19v-4"/></svg>
+      <span>统计</span>
+    </button>
+    <div class="railGap"></div>
+    <button id="railSearch" class="railBtn" title="搜索">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.4"/><path d="M16 16l4.4 4.4"/></svg>
+      <span>搜索</span>
+    </button>
+    <button id="railSettings" class="railBtn" title="设置">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.6v2.4M12 19v2.4M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.6 12h2.4M19 12h2.4M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>
+      <span>设置</span>
+    </button>
+  </nav>
+
+  <!-- 中间列表栏 -->
+  <section id="listPane" class="listPane">
+    <header class="paneHead">
+      <div class="paneTitle" id="paneTitle">大纲</div>
+      <button id="btnNet" class="paneLink" title="人物关系网" hidden>关系网</button>
+      <div class="paneActions">
+        <button id="btnNewFolder" class="iconBtn" title="新建分组（大纲里是分组，正文里是一卷）">▤</button>
+        <button id="btnNew" class="iconBtn" title="新建">+</button>
+      </div>
+    </header>
+    <div id="listFilter" class="filterBar" hidden></div>
+    <div id="listBody" class="listBody"></div>
+    <footer class="paneFoot">
+      <span id="projTitle" class="projTitle">未命名作品</span>
+      <span id="projWords" class="projWords">0 字</span>
+    </footer>
+  </section>
+
+  <!-- 右侧主区 -->
+  <main id="mainPane" class="mainPane">
+
+    <!-- 大纲：正文编辑 -->
+    <div id="viewEditor" class="view">
+      <header class="topBar">
+        <button id="btnToggleList" class="iconBtn onlyNarrow" title="目录">☰</button>
+        <input id="docTitle" class="docTitle" type="text" placeholder="未命名章节" spellcheck="false">
+        <div class="topRight">
+          <select id="docStatus" class="statusSel" title="状态"></select>
+          <span id="saveState" class="saveState">已保存</span>
+          <button id="btnHistory" class="iconBtn" title="历史版本">◷</button>
+          <button id="btnFocus" class="iconBtn" title="专注模式">◎</button>
+          <button id="btnNodeInfo" class="iconBtn" title="本章设定">⋯</button>
+        </div>
+      </header>
+      <div id="editorWrap" class="editorWrap">
+        <textarea id="editor" class="editor" spellcheck="false" placeholder="在这里写。别急，第一个字最难。"></textarea>
+      </div>
+      <footer id="statusbar" class="statusbar">
+        <span id="statChars">0 字</span>
+        <span id="statTotal">共 0 字符</span>
+        <span id="statGoal" class="statGoal"></span>
+        <span class="statSpacer"></span>
+        <span id="statSync" class="statSync"></span>
+      </footer>
+    </div>
+
+    <!-- 角色 / 物品 -->
+    <div id="viewCards" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <input id="cardName" class="docTitle" type="text" placeholder="名字" spellcheck="false">
+        <div class="topRight">
+          <button id="btnCardDelete" class="iconBtn danger" title="删除">✕</button>
+        </div>
+      </header>
+      <div id="cardBody" class="cardBody"></div>
+    </div>
+
+    <!-- 情节 -->
+    <div id="viewPlot" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <input id="plotName" class="docTitle" type="text" placeholder="情节名" spellcheck="false">
+        <div class="topRight">
+          <button id="btnPlotDelete" class="iconBtn danger" title="删除">✕</button>
+        </div>
+      </header>
+      <div id="plotBody" class="cardBody"></div>
+    </div>
+
+    <!-- 世界观 -->
+    <div id="viewWorld" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <input id="worldTitle" class="docTitle" type="text" placeholder="条目名" spellcheck="false">
+        <div class="topRight">
+          <button id="btnWorldDelete" class="iconBtn danger" title="删除">✕</button>
+        </div>
+      </header>
+      <div class="editorWrap">
+        <textarea id="worldEditor" class="editor" spellcheck="false" placeholder="这个词条是什么？"></textarea>
+      </div>
+    </div>
+
+    <!-- 树（世界树的思维导图） -->
+    <div id="viewMind" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <div class="docTitle asText" id="paneTitleMind">思维</div>
+        <div class="topRight">
+          <span class="mindStat" id="mindStat"></span>
+          <button class="iconBtn" id="mindExpand" title="全部展开">⊞</button>
+          <button class="iconBtn" id="mindCollapse" title="收起来一层">⊟</button>
+          <button class="iconBtn" id="mindFit" title="适应窗口">⤢</button>
+        </div>
+      </header>
+      <div id="mindCanvas" class="mindCanvas">
+        <div class="mindEmpty">正在读世界树…</div>
+      </div>
+    </div>
+
+    <!-- 人物关系网 -->
+    <div id="viewNet" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <div class="docTitle asText" id="netTitle">人物关系网</div>
+        <div class="topRight">
+          <span class="mindStat" id="netStat"></span>
+          <button class="iconBtn" id="netBack" title="回到角色列表">✕</button>
+        </div>
+      </header>
+      <div class="netBody">
+        <aside class="netSide">
+          <input class="mInput" id="netFind" placeholder="找角色…" autocomplete="off">
+          <div class="netList" id="netList"></div>
+        </aside>
+        <div class="netStage" id="netStage">
+          <svg class="netSvg" id="netSvg"><g id="netG"></g></svg>
+        </div>
+        <aside class="netPanel">
+          <div class="netPanelHead">
+            <div class="netPanelName" id="netCenterName">—</div>
+            <div class="netPanelMeta" id="netCenterMeta"></div>
+          </div>
+          <div class="netPanelSearch">
+            <input class="mInput" id="netRelSearch" type="search" autocomplete="off" placeholder="在这几条关系里找人…">
+          </div>
+          <div class="netRels" id="netRels"></div>
+          <div class="netPanelFoot">
+            <button class="netAddBtn" id="netAddRel">＋ 加一条关系</button>
+            <button class="netTypeBtn" id="netTypes" title="每种关系配一个颜色">配色</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- 统计 -->
+    <div id="viewStats" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <div class="docTitle asText">写作统计</div>
+      </header>
+      <div id="statsBody" class="statsBody"></div>
+    </div>
+
+    <!-- 空状态：这一屏以前没有任何顶栏，手机上进来就出不去了 -->
+    <div id="viewEmpty" class="view" hidden>
+      <header class="topBar">
+        <button class="iconBtn onlyNarrow btnToggleList" title="目录">☰</button>
+        <div class="docTitle asText" id="emptyTitle">空</div>
+        <div class="topRight">
+          <button id="btnEmptyNew" class="iconBtn" title="新建">+</button>
+        </div>
+      </header>
+      <div class="emptyBox">
+        <div class="emptyText">选一个章节开始写</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="scrim" class="scrim"></div>
+</div>
+
+<!-- 浮层 -->
+<div id="overlay" class="overlay" hidden>
+  <div id="overlayCard" class="overlayCard"></div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<!-- ───────────── 书架 ───────────── -->
+<div id="shelf" class="shelf" hidden>
+  <div class="shelfTop">
+    <div class="shelfHead">
+      <span class="shelfLogo">茉</span>
+      <span class="shelfTitleTxt">书架</span>
+    </div>
+    <button id="shelfClose" class="iconBtn" title="回到写作台">✕</button>
+  </div>
+  <div id="shelfList" class="shelfList"></div>
+  <div class="shelfFoot">
+    <button id="shelfNew" class="shelfNew">
+      <span class="plus">＋</span> 新建一本书
+    </button>
+  </div>
+</div>
+
+<!-- 书籍详情：桌面从右边滑出，手机从下边滑出 -->
+<div id="bdScrim" class="bdScrim" hidden></div>
+<aside id="bookDetail" class="bookDetail" hidden>
+  <div class="bdHead">
+    <div class="bdCoverWrap">
+      <div id="bdCover" class="bdCover"></div>
+    </div>
+    <div class="bdHeadInfo">
+      <div id="bdTitle" class="bdTitle">—</div>
+      <div id="bdMeta" class="bdMeta"></div>
+    </div>
+    <button id="bdClose" class="iconBtn" title="收起来">✕</button>
+  </div>
+
+  <div class="bdBody">
+    <label class="fLabel" for="bdName">书名</label>
+    <input id="bdName" class="mInput" maxlength="80" autocomplete="off">
+
+    <label class="fLabel" for="bdSeries">系列</label>
+    <input id="bdSeries" class="mInput" maxlength="80" autocomplete="off" placeholder="同属一个系列就写在这里">
+
+    <label class="fLabel" for="bdAuthor">作者</label>
+    <input id="bdAuthor" class="mInput" maxlength="80" autocomplete="off" placeholder="笔名">
+
+    <label class="fLabel" for="bdEmail">邮箱</label>
+    <input id="bdEmail" class="mInput" maxlength="120" autocomplete="off" placeholder="留个能联系到你的地方">
+
+    <label class="fLabel" for="bdLicense">许可证</label>
+    <input id="bdLicense" class="mInput" maxlength="120" autocomplete="off" placeholder="比如：保留所有权利">
+
+    <div id="bdStats" class="bdStats"></div>
+  </div>
+
+  <div class="bdFoot">
+    <button id="bdOpen" class="bdBtn primary">打开这本</button>
+    <button id="bdDone" class="bdBtn">收起来</button>
+  </div>
+</aside>
+
+<script src="core.js"></script>
+<script src="view-tree.js"></script>
+<script src="view-text.js"></script>
+<script src="view-cards.js"></script>
+<script src="view-world.js"></script>
+<script src="view-mind.js"></script>
+<script src="view-net.js"></script>
+<script src="view-stats.js"></script>
+<script src="view-shelf.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

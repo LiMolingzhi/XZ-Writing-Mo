@@ -1,0 +1,23 @@
+# 写作数据（首次启动自动生成，里面是你的稿子）
+data/
+data.backup-*/
+data.empty-*/
+
+# 首次启动生成的配置与密码
+config.json
+密码.txt
+
+# 日志
+*.log
+
+# 运行时：node.exe 由安装包自带，不要塞进版本库
+node/
+*.pdb
+
+# 系统垃圾
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 说明：Setup.exe 和 茉写作.apk 是**故意**留在版本库里的（见 README「下载」一节），
+# 所以这里不再用 *.exe / *.apk 通配。哪天想清空重来，把那两个文件删掉即可。
